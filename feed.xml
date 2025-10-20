@@ -8,7 +8,7 @@
     <description>Feed mit zwei Einträgen</description>
     
     <item>
-      <title>Charite.de</title>
+      <title>Test2</title>
       <link></link>
       <description>Phishing Mail der XXX</description>
       <pubDate>Thu, 20 Oct 2025 10:01:00 GMT</pubDate>
@@ -23,7 +23,7 @@
     </item>
     
     <item>
-      <title>Charite.de</title>
+      <title>Test1</title>
       <link></link>
       <description>Phishing Mail der XXX</description>
       <pubDate>Thu, 20 Oct 2025 10:00:00 GMT</pubDate>
