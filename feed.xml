@@ -13,12 +13,12 @@
       <description>Phishing Mail der XXX</description>
       <pubDate>Thu, 20 Oct 2025 10:01:00 GMT</pubDate>
       <media:content 
-        url="https://Mail0001.jpg" 
+        url="https://www.verbraucherzentrale.de/sites/default/files/inline-images/screenshot-deutsche-bank_0.png" 
         type="image/jpeg" 
         width="800" 
         height="600"/>
       <enclosure 
-        url="https://Mail0001.jpg" 
+        url="https://www.verbraucherzentrale.de/sites/default/files/inline-images/screenshot-deutsche-bank_0.png" 
         type="image/jpeg"/>
     </item>
     
