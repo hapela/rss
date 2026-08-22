@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RSS Feed Editor - Security Portal</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Spezial-Styles für RSS Feed Editor */
+	* {
+     margin: 0;
+     padding: 0;
+     box-sizing: border-box;
+    }
+     html,body {
+     width: 100%;
+     height: 100%;
+     overflow: hidden;
+     font-family: "Segoe UI", sans-serif;
+    }
+    body {
+     background: #08102c;
+     color: #ffffff;
+    }
+	.sticky-header {
+     position: sticky;
+     top: 0;
+     z-index: 200;
+     background: #08102c;
+     padding: 10px 0;
+     margin-bottom: 10px;
+    }
+   #page-content h1 {
+     color: #00f5a0;
+     font-size: 30px;
+     margin-bottom: 10px;
+    }
+    .page-content {
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      padding: 0;
+    }
+
+    .feed-form-section {
+      padding: 20px;
+      margin-bottom: 20px;
+      background: rgba(14, 22, 63, 0.95);
+      border: 1px solid rgba(0, 245, 160, 0.25);
+      border-radius: 10px;
+    }
+
+    .feed-form-section h3 {
+      color: #00f5a0;
+      margin-bottom: 15px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .form-row.full {
+      grid-column: 1 / -1;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group label {
+      color: #cfd8ff;
+      font-size: 12px;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      background: #121f4e;
+      color: white;
+      border: 1px solid rgba(0, 245, 160, 0.4);
+      border-radius: 6px;
+      padding: 10px;
+      font-family: inherit;
+      font-size: 13px;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #00f5a0;
+      box-shadow: 0 0 8px rgba(0, 245, 160, 0.3);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .status-message {
+      padding: 10px 15px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      font-size: 13px;
+      display: none;
+    }
+
+    .status-message.success {
+      display: block;
+      background: rgba(19, 61, 36, 0.8);
+      color: #51cf66;
+      border: 1px solid rgba(81, 207, 102, 0.3);
+    }
+
+    .status-message.error {
+      display: block;
+      background: rgba(82, 31, 31, 0.8);
+      color: #ff6b6b;
+      border: 1px solid rgba(255, 107, 107, 0.3);
+    }
+
+    .status-message.warning {
+      display: block;
+      background: rgba(61, 51, 0, 0.8);
+      color: #ffd43b;
+      border: 1px solid rgba(255, 212, 59, 0.3);
+    }
+
+    .items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .item-card {
+      background: rgba(14, 22, 63, 0.95);
+      border: 1px solid rgba(0, 245, 160, 0.25);
+      border-radius: 10px;
+      padding: 15px;
+    }
+
+    .item-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .item-card-title {
+      color: #00f5a0;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .item-preview {
+      color: #cfd8ff;
+      font-size: 12px;
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+
+    .preview-row {
+      margin-bottom: 6px;
+    }
+
+    .preview-row strong {
+      color: #7ee8c8;
+    }
+
+    .image-preview-container {
+      margin-top: 10px;
+      padding: 10px;
+      background: #08102c;
+      border-radius: 6px;
+      border: 1px solid rgba(0, 245, 160, 0.15);
+    }
+
+    .image-preview-container img {
+      max-width: 300px;
+      max-height: 300px;
+      border-radius: 6px;
+      display: block;
+    }
+
+    .image-info {
+      color: #7ee8c8;
+      font-size: 11px;
+      margin-top: 6px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 15px;
+    }
+
+    .btn-primary {
+      background: #00f5a0;
+      color: #08102c;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      transition: all 0.3s;
+    }
+
+    .btn-primary:hover {
+      background: #00d98e;
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: #153267;
+      color: white;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      transition: all 0.3s;
+    }
+
+    .btn-secondary:hover {
+      background: #1a3d7a;
+    }
+
+    .btn-danger {
+      background: #ff6b6b;
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.3s;
+    }
+
+    .btn-danger:hover {
+      background: #ff5252;
+    }
+
+    #imagePreview {
+      margin-top: 10px;
+    }
+
+    .attack-types {
+      max-height: 150px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <main class="content">
+      <div id="page-content" class="page-content">
+        
+        <!-- Sticky Header -->
+        <div class="sticky-header">
+          <h1>📧 RSS Feed Generator</h1>
+          <p style="color: #cfd8ff; font-size: 13px; margin-top: 5px;">Erstelle Phishing & Malware Benachrichtigungen als RSS-Feed</p>
+        </div>
+
+        <!-- Top Bar -->
+        <div class="top-bar">
+          <button class="btn-secondary" onclick="triggerFileUpload()" title="Bestehende feed.xml laden">
+            📂 Feed laden
+          </button>
+          <button class="btn-secondary" onclick="autoSaveFeed()">
+            💾 Auto-Speichern
+          </button>
+          <input type="file" id="feedFileInput" accept=".xml" onchange="loadFeedFromFile()" style="display: none;">
+        </div>
+
+        <!-- Status Messages -->
+        <div id="alertContainer" style="padding: 20px; padding-bottom: 0;"></div>
+
+        <!-- Feed-Einstellungen -->
+        <div id="feed-settings" class="feed-form-section" style="margin-left: 20px; margin-right: 20px;">
+          <h3>⚙️ Feed-Einstellungen</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="feedTitle">Feed-Titel</label>
+              <input type="text" id="feedTitle" placeholder="z.B. Sicherheitswarnungen">
+            </div>
+            <div class="form-group">
+              <label for="feedLink">Website-URL</label>
+              <input type="url" id="feedLink" placeholder="https://beispiel.de">
+            </div>
+          </div>
+          <div class="form-row full">
+            <div class="form-group">
+              <label for="feedDescription">Feed-Beschreibung</label>
+              <textarea id="feedDescription" placeholder="Beschreibung des Feeds..."></textarea>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="feedAuthor">Kontakt-E-Mail</label>
+            <input type="email" id="feedAuthor" placeholder="kontakt@beispiel.de">
+          </div>
+        </div>
+
+        <!-- Artikel Hinzufügen -->
+        <div id="article-form" class="feed-form-section" style="margin-left: 20px; margin-right: 20px; margin-top: 20px;">
+          <h3>✏️ Sicherheitswarnung hinzufügen</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="itemTitle">Betreff der Warnung</label>
+              <input type="text" id="itemTitle" placeholder="z.B. Phishing-E-Mail im Umlauf">
+            </div>
+            <div class="form-group">
+              <label for="itemSenderAddress">Absenderadresse</label>
+              <input type="text" id="itemSenderAddress" placeholder="z.B. spammer@malicious.com">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="itemAttackType">Angriffstyp</label>
+              <select id="itemAttackType">
+                <option value="">-- Bitte auswählen --</option>
+                <option value="Mail-Phishing">Mail-Phishing</option>
+                <option value="Mail-Spoofing">Mail-Spoofing</option>
+                <option value="Mail-Malware">Mail-Malware</option>
+                <option value="Mail-CEO-Fraud">Mail-CEO-Fraud</option>
+                <option value="Mail-BEC">Mail-BEC (Business Email Compromise)</option>
+                <option value="Mail-Ransomware">Mail-Ransomware</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="itemLink">Artikel-URL (optional)</label>
+              <input type="url" id="itemLink" placeholder="https://beispiel.de/artikel">
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="form-group">
+              <label for="itemDescription">Beschreibung der Warnung</label>
+              <textarea id="itemDescription" placeholder="Detaillierte Beschreibung des Angriffs..."></textarea>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="itemDangerousLink">Gefährlicher Link (wird maskiert)</label>
+              <input type="url" id="itemDangerousLink" placeholder="https://malicious-site.com">
+            </div>
+            <div class="form-group">
+              <label for="itemAuthor">Verfasser (optional)</label>
+              <input type="text" id="itemAuthor" placeholder="Max Mustermann">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="itemPubDate">Veröffentlichungsdatum</label>
+              <input type="text" id="itemPubDate" placeholder="2026-01-15T10:30:00Z">
+            </div>
+          </div>
+
+          <div class="form-row full">
+            <div class="form-group">
+              <label>Screenshot/Beweis (optional)</label>
+              <div class="button-group">
+                <button class="btn-secondary" onclick="pasteImageFromClipboard()">📋 Aus Zwischenablage</button>
+                <button class="btn-secondary" onclick="document.getElementById('itemImage').click()">📁 Datei hochladen</button>
+              </div>
+              <input type="file" id="itemImage" accept="image/*" style="display: none;">
+              <div id="imagePreview"></div>
+            </div>
+          </div>
+
+          <div class="button-group">
+            <button class="btn-primary" onclick="addItem()">+ Warnung hinzufügen</button>
+          </div>
+        </div>
+
+        <!-- Artikel Liste -->
+        <div id="articles-list" class="feed-form-section" style="margin-left: 20px; margin-right: 20px; margin-top: 20px;">
+          <h3>📋 Warnungen im Feed</h3>
+          <div class="items-list" id="itemsList">
+            <p style="color: #999; text-align: center; padding: 20px;">Noch keine Warnungen hinzugefügt</p>
+          </div>
+        </div>
+
+        <!-- Download -->
+        <div id="download" class="feed-form-section" style="margin-left: 20px; margin-right: 20px; margin-top: 20px;">
+          <h3>📥 Feed herunterladen</h3>
+          <p style="color: #cfd8ff; font-size: 13px; margin-bottom: 15px;">
+            ✓ RSS 2.0 Standard konform<br>
+            ✓ Bilder automatisch optimiert<br>
+            ✓ Einsatzbereit für Feed-Reader
+          </p>
+          <div class="button-group">
+            <button class="btn-primary" onclick="downloadFeed()">📥 Feed als feed.xml herunterladen</button>
+            <button class="btn-secondary" onclick="previewFeed()">👁️ Vorschau anzeigen</button>
+          </div>
+        </div>
+
+        <div style="height: 40px;"></div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    let items = [];
+    let currentImageData = null;
+    const STORAGE_KEY = 'rss_feed_data';
+
+    // ===== UTILITIES =====
+    function scrollToSection(sectionId) {
+      const section = document.getElementById(sectionId);
+      if (section)
+        section.scrollIntoView({ behavior: 'smooth' });
+      }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function maskLink(link) {
+      if (!link) return '';
+      try {
+        const url = new URL(link);
+        const domain = url.hostname;
+        return `[MASKIERT: ${domain}]`;
+      } catch {
+        return '[MASKIERT: Link]';
+      }
+    }
+
+    // ===== CLIPBOARD IMAGE PASTE =====
+    async function pasteImageFromClipboard() {
+      try {
+        const items_clipboard = await navigator.clipboard.read();
+        let imageFound = false;
+        for (const item of items_clipboard) {
+          if (item.types.includes('image/png') || item.types.includes('image/jpeg')) {
+            const imageBlob = await item.getType(item.types.find(t => t.startsWith('image/')));
+            const file = new File([imageBlob], 'clipboard-image.png', { type: imageBlob.type });
+            await processImageFile(file);
+            imageFound = true;
+            showAlert('✓ Screenshot aus Zwischenablage eingefügt!', 'success');
+            break;
+          }
+        }
+        if (!imageFound) {
+          showAlert('✗ Keine Bilder in der Zwischenablage gefunden', 'warning');
+        }
+      } catch (err) {
+        showAlert('✗ Fehler beim Zugriff auf Zwischenablage: ' + err.message, 'warning');
+      }
+    }
+
+    // ===== IMAGE COMPRESSION =====
+    function compressImage(file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (e) => {
+          const img = new Image();
+          img.src = e.target.result;
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            
+            // Max 800px Breite (doppelte Größe vom Original)
+            if (width > 800) {
+              height = (height * 800) / width;
+              width = 800;
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            const compressed = canvas.toDataURL('image/jpeg', 0.7);
+            const originalSize = file.size;
+            const compressedSize = Math.round(compressed.length * 0.75);
+            
+            resolve({
+              data: compressed,
+              originalSize,
+              compressedSize
+            });
+          };
+        };
+      });
+    }
+
+    // ===== FILE INPUT PROCESSING =====
+    async function processImageFile(file) {
+      const compressed = await compressImage(file);
+      currentImageData = compressed;
+      displayImagePreview(compressed);
+    }
+
+    document.getElementById('itemImage').addEventListener('change', (e) => {
+      if (e.target.files[0]) {
+        processImageFile(e.target.files[0]);
+      }
+    });
+
+    // ===== IMAGE PREVIEW =====
+    function displayImagePreview(imageData) {
+      const preview = document.getElementById('imagePreview');
+      const sizeKb = (imageData.compressedSize / 1024).toFixed(1);
+      preview.innerHTML = `
+        <div class="image-preview-container">
+          <img src="${imageData.data}" alt="Preview">
+          <div class="image-info">
+            Original: ${(imageData.originalSize / 1024).toFixed(1)} KB | 
+            Komprimiert: ${sizeKb} KB | 
+            Breite: 800px
+          </div>
+        </div>
+      `;
+    }
+
+    function clearImagePreview() {
+      currentImageData = null;
+      document.getElementById('imagePreview').innerHTML = '';
+      document.getElementById('itemImage').value = '';
+    }
+
+    // ===== ADD ITEM =====
+    function addItem() {
+      const title = document.getElementById('itemTitle').value.trim();
+      const senderAddress = document.getElementById('itemSenderAddress').value.trim();
+      const description = document.getElementById('itemDescription').value.trim();
+      const attackType = document.getElementById('itemAttackType').value.trim();
+      const dangerousLink = document.getElementById('itemDangerousLink').value.trim();
+      const author = document.getElementById('itemAuthor').value.trim();
+      const link = document.getElementById('itemLink').value.trim();
+      const pubDate = document.getElementById('itemPubDate').value.trim() || new Date().toISOString();
+
+      // Feed wird auch erstellt, wenn einzelne Felder nicht ausgefüllt sind
+      if (!title || !description) {
+        showAlert('✗ Bitte mindestens Betreff und Beschreibung ausfüllen', 'warning');
+        return;
+      }
+
+      const item = {
+        id: Date.now(),
+        title,
+        senderAddress,
+        description,
+        attackType,
+        dangerousLink,
+        author,
+        link,
+        pubDate,
+        image: currentImageData ? currentImageData.data : null
+      };
+
+      items.unshift(item);
+      saveToLocalStorage();
+      renderItemsList();
+      clearForm();
+      clearImagePreview();
+      showAlert('✓ Warnung hinzugefügt!', 'success');
+    }
+
+    function clearForm() {
+      document.getElementById('itemTitle').value = '';
+      document.getElementById('itemSenderAddress').value = '';
+      document.getElementById('itemDescription').value = '';
+      document.getElementById('itemAttackType').value = '';
+      document.getElementById('itemDangerousLink').value = '';
+      document.getElementById('itemAuthor').value = '';
+      document.getElementById('itemLink').value = '';
+      document.getElementById('itemPubDate').value = '';
+    }
+
+    // ===== RENDER ITEMS =====
+    function renderItemsList() {
+      const list = document.getElementById('itemsList');
+      
+      if (items.length === 0) {
+        list.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">Noch keine Warnungen hinzugefügt</p>';
+        return;
+      }
+
+      list.innerHTML = items.map(item => `
+        <div class="item-card">
+          <div class="item-card-header">
+            <div class="item-card-title">${escapeHtml(item.title)}</div>
+            <button class="btn-danger" onclick="deleteItem(${item.id})">🗑️ Löschen</button>
+          </div>
+          <div class="item-preview">
+            ${item.senderAddress ? `<div class="preview-row"><strong>Absender:</strong> ${escapeHtml(item.senderAddress)}</div>` : ''}
+            ${item.attackType ? `<div class="preview-row"><strong>Angriffstyp:</strong> ${escapeHtml(item.attackType)}</div>` : ''}
+            ${item.dangerousLink ? `<div class="preview-row"><strong>Link:</strong> ${maskLink(item.dangerousLink)}</div>` : ''}
+            <div class="preview-row"><strong>Beschreibung:</strong> ${escapeHtml(item.description.substring(0, 100))}...</div>
+            <div class="preview-row"><strong>Datum:</strong> ${item.pubDate}</div>
+            ${item.author ? `<div class="preview-row"><strong>Verfasser:</strong> ${escapeHtml(item.author)}</div>` : ''}
+          </div>
+          ${item.image ? `
+            <div class="image-preview-container">
+              <img src="${item.image}" alt="Article image">
+              <div class="image-info">📸 Screenshot vorhanden</div>
+            </div>
+          ` : ''}
+        </div>
+      `).join('');
+    }
+
+    function deleteItem(id) {
+      items = items.filter(item => item.id !== id);
+      saveToLocalStorage();
+      renderItemsList();
+      showAlert('✓ Warnung gelöscht', 'success');
+    }
+
+    // ===== GENERATE FEED XML =====
+    function generateFeedXML() {
+      const title = document.getElementById('feedTitle').value.trim() || 'Sicherheitswarnungen';
+      const link = document.getElementById('feedLink').value.trim() || 'https://beispiel.de';
+      const description = document.getElementById('feedDescription').value.trim() || 'Sicherheitswarnungen und Threat Intelligence';
+      const author = document.getElementById('feedAuthor').value.trim();
+
+      let itemsXML = items.map(item => {
+        let itemHTML = `<p>${escapeHtml(item.description)}</p>`;
+        
+        // Beschreibung mit neuen Feldern zusammensetzen
+        let fullDescription = item.description;
+        if (item.senderAddress) {
+          fullDescription += `\n\nAbsenderadresse: ${item.senderAddress}`;
+        }
+        if (item.attackType) {
+          fullDescription += `\nAngriffstyp: ${item.attackType}`;
+        }
+        if (item.dangerousLink) {
+          fullDescription += `\nGefährlicher Link: ${maskLink(item.dangerousLink)}`;
+        }
+
+        itemHTML = `<p>${escapeHtml(fullDescription)}</p>`;
+        
+        if (item.image) {
+          itemHTML += `<p><img src="${item.image}" alt="Screenshot" style="max-width: 100%; height: auto;"></p>`;
+        }
+
+        // Artikel-URL nur hinzufügen, wenn es Inhalt hat
+        let itemLinkXML = '';
+        if (item.link && item.link.trim()) {
+          itemLinkXML = `<link>${escapeHtml(item.link)}</link>`;
+        }
+
+        return `
+<item>
+<title><![CDATA[${escapeHtml(item.title)}]]></title>
+${itemLinkXML}
+<guid isPermaLink="false">${escapeHtml(item.title)}-${item.id}</guid>
+<pubDate>${item.pubDate}</pubDate>
+${item.author ? `<author>${escapeHtml(item.author)}</author>` : ''}
+<description><![CDATA[${escapeHtml(fullDescription)}]]></description>
+<content:encoded><![CDATA[${itemHTML}]]></content:encoded>
+</item>`;
+      }).join('\n');
+
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+xmlns:content="http://purl.org/rss/1.0/modules/content/">
+<channel>
+<title><![CDATA[${escapeHtml(title)}]]></title>
+<link>${escapeHtml(link)}</link>
+<description><![CDATA[${escapeHtml(description)}]]></description>
+<language>de</language>
+<lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+<generator>RSS Feed Editor - Security Portal</generator>
+${author ? `<managingEditor>${escapeHtml(author)}</managingEditor>` : ''}
+${itemsXML}
+</channel>
+</rss>`;
+
+      return xml;
+    }
+
+    // ===== DOWNLOAD FEED =====
+    function downloadFeed() {
+      if (!document.getElementById('feedTitle').value.trim()) {
+        showAlert('✗ Bitte gib einen Feed-Titel ein', 'warning');
+        return;
+      }
+
+      const xml = generateFeedXML();
+      const blob = new Blob([xml], { type: 'application/xml' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'feed.xml';
+      a.click();
+      URL.revokeObjectURL(url);
+      showAlert('✓ Feed heruntergeladen!', 'success');
+    }
+
+    // ===== AUTO-SAVE =====
+    function autoSaveFeed() {
+      if (!document.getElementById('feedTitle').value.trim()) {
+        showAlert('✗ Bitte gib einen Feed-Titel ein', 'warning');
+        return;
+      }
+
+      const xml = generateFeedXML();
+      const blob = new Blob([xml], { type: 'application/xml' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'feed.xml';
+      a.click();
+      URL.revokeObjectURL(url);
+      saveToLocalStorage();
+      showAlert('✓ Feed als feed.xml gespeichert!', 'success');
+    }
+
+    // ===== LOAD FROM FILE =====
+    function triggerFileUpload() {
+      document.getElementById('feedFileInput').click();
+    }
+
+    function loadFeedFromFile() {
+      const file = document.getElementById('feedFileInput').files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const xmlText = e.target.result;
+          const parser = new DOMParser();
+          const xmlDoc = parser.parseFromString(xmlText, 'application/xml');
+
+          if (xmlDoc.getElementsByTagName('parsererror').length) {
+            showAlert('✗ Fehler beim Parsen der XML-Datei', 'warning');
+            return;
+          }
+
+          const channel = xmlDoc.querySelector('channel');
+          document.getElementById('feedTitle').value = channel.querySelector('title')?.textContent || '';
+          document.getElementById('feedLink').value = channel.querySelector('link')?.textContent || '';
+          document.getElementById('feedDescription').value = channel.querySelector('description')?.textContent || '';
+          document.getElementById('feedAuthor').value = channel.querySelector('managingEditor')?.textContent || '';
+
+          items = [];
+          const itemElements = xmlDoc.querySelectorAll('item');
+          itemElements.forEach((itemEl) => {
+            const item = {
+              id: Date.now() + Math.random(),
+              title: itemEl.querySelector('title')?.textContent || '',
+              senderAddress: '',
+              attackType: '',
+              dangerousLink: '',
+              link: itemEl.querySelector('link')?.textContent || '',
+              description: itemEl.querySelector('description')?.textContent || '',
+              author: itemEl.querySelector('author')?.textContent || '',
+              pubDate: itemEl.querySelector('pubDate')?.textContent || new Date().toISOString(),
+              image: null
+            };
+
+            let contentEncoded = '';
+            const allElements = itemEl.getElementsByTagName('*');
+            for (let i = 0; i < allElements.length; i++) {
+              const el = allElements[i];
+              if (el.tagName === 'content:encoded' || el.tagName.endsWith(':encoded') || el.nodeName === 'content:encoded') {
+                contentEncoded = el.textContent || '';
+                break;
+              }
+            }
+
+            if (!contentEncoded) {
+              const encoded = itemEl.querySelector('content\\:encoded');
+              if (encoded) {
+                contentEncoded = encoded.textContent || '';
+              }
+            }
+
+            if (contentEncoded) {
+              let imgMatch = contentEncoded.match(/src="(data:image\/[^"]+)"/);
+              if (!imgMatch) {
+                imgMatch = contentEncoded.match(/src='(data:image\/[^']+)'/);
+              }
+              if (!imgMatch) {
+                imgMatch = contentEncoded.match(/(data:image\/[^)\s"'<]+)/);
+              }
+              if (imgMatch && imgMatch[1]) {
+                item.image = imgMatch[1];
+              }
+            }
+
+            items.push(item);
+          });
+
+          renderItemsList();
+          saveToLocalStorage();
+          showAlert('✓ Feed erfolgreich geladen! (' + items.length + ' Artikel)', 'success');
+          document.getElementById('feedFileInput').value = '';
+        } catch (err) {
+          showAlert('✗ Fehler beim Laden: ' + err.message, 'warning');
+          console.error
+(err);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // ===== PREVIEW FEED =====
+    function previewFeed() {
+      const xml = generateFeedXML();
+      const blob = new Blob([xml], { type: 'application/xml' });
+      const url = URL.createObjectURL(blob);
+      window.open(url);
+    }
+
+    // ===== LOCAL STORAGE =====
+    function saveToLocalStorage() {
+      const data = {
+        feedTitle: document.getElementById('feedTitle').value,
+        feedLink: document.getElementById('feedLink').value,
+        feedDescription: document.getElementById('feedDescription').value,
+        feedAuthor: document.getElementById('feedAuthor').value,
+        items: items
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function loadFromLocalStorage() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        try {
+          const data = JSON.parse(stored);
+          document.getElementById('feedTitle').value = data.feedTitle || '';
+          document.getElementById('feedLink').value = data.feedLink || '';
+          document.getElementById('feedDescription').value = data.feedDescription || '';
+          document.getElementById('feedAuthor').value = data.feedAuthor || '';
+          items = data.items || [];
+          renderItemsList();
+        } catch (err) {
+          console.error('Fehler beim Laden aus localStorage:', err);
+        }
+      }
+    }
+
+    // ===== ALERTS =====
+    function showAlert(message, type = 'info') {
+      const container = document.getElementById('alertContainer');
+      const alert = document.createElement('div');
+      alert.className = `status-message ${type}`;
+      alert.textContent = message;
+      alert.style.marginBottom = '10px';
+      container.appendChild(alert);
+
+      setTimeout(() => {
+        alert.style.opacity = '0';
+        alert.style.transition = 'opacity 0.3s';
+        setTimeout(() => alert.remove(), 300);
+      }, 4000);
+    }
+
+    // ===== INIT =====
+    document.addEventListener('DOMContentLoaded', () => {
+      loadFromLocalStorage();
+      showAlert('✓ Lokale Daten geladen. Du kannst auch eine bestehende feed.xml hochladen.', 'success');
+    });
+
+    // Auto-Save bei Änderungen
+    document.getElementById('feedTitle').addEventListener('change', saveToLocalStorage);
+    document.getElementById('feedLink').addEventListener('change', saveToLocalStorage);
+    document.getElementById('feedDescription').addEventListener('change', saveToLocalStorage);
+    document.getElementById('feedAuthor').addEventListener('change', saveToLocalStorage);
+  </script>
+</body>
+</html>
